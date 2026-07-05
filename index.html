@@ -7,9 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -18,12 +16,15 @@
       font-family: Arial, sans-serif;
     }
 
-    .cabecera {
-      border: 1px solid #2b3440;
-      background: #10151c;
-      padding: 12px;
+    .cabecera, .zona {
       margin: 12px;
+      padding: 12px;
+      border: 1px solid #2b3440;
       border-radius: 10px;
+      background: #10151c;
+    }
+
+    .cabecera {
       display: flex;
       gap: 12px;
       align-items: center;
@@ -41,7 +42,7 @@
       white-space: nowrap;
     }
 
-    input {
+    input, textarea {
       background: #05070a;
       color: white;
       border: 1px solid #394452;
@@ -50,29 +51,12 @@
       font-size: 16px;
     }
 
-    #tema {
-      width: 320px;
-    }
-
-    #autor {
-      width: 240px;
-    }
-
-    #tonalidad {
-      width: 80px;
-    }
-
-    .zona {
-      margin: 12px;
-      padding: 12px;
-      border: 1px solid #2b3440;
-      border-radius: 10px;
-      background: #080b10;
-    }
+    #tema { width: 320px; }
+    #autor { width: 240px; }
+    #tonalidad { width: 80px; }
 
     .fila {
       display: flex;
-      align-items: stretch;
       gap: 10px;
       margin-bottom: 10px;
     }
@@ -86,7 +70,6 @@
       padding: 8px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
     }
 
     .posicion {
@@ -98,7 +81,6 @@
     .contenido {
       flex: 1;
       background: transparent;
-      color: white;
       border: none;
       resize: none;
       outline: none;
@@ -116,17 +98,17 @@
       cursor: pointer;
     }
 
-    button:hover {
-      background: #263445;
-    }
-
     .boton-derecha {
       align-self: center;
       min-width: 38px;
     }
 
-    .boton-debajo {
-      margin-top: 4px;
+    .bloque-json {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #2b3440;
+      display: flex;
+      gap: 10px;
     }
   </style>
 </head>
@@ -135,24 +117,33 @@
 
   <div class="cabecera">
     <div class="campo">
-      <label for="tema">Tema musical</label>
+      <label>Tema musical</label>
       <input id="tema" type="text">
     </div>
 
     <div class="campo">
-      <label for="autor">Autor</label>
+      <label>Autor</label>
       <input id="autor" type="text">
     </div>
 
     <div class="campo">
-      <label for="tonalidad">Tonalidad</label>
+      <label>Tonalidad</label>
       <input id="tonalidad" type="text">
     </div>
   </div>
 
   <div class="zona">
     <div id="tablero"></div>
-    <button class="boton-debajo" onclick="crearFila()">+ crear fila debajo</button>
+
+    <button onclick="crearFila()">+ crear fila debajo</button>
+
+    <div class="bloque-json">
+      <button onclick="guardarJSON()">Guardar JSON</button>
+      <button onclick="document.getElementById('cargarArchivo').click()">Cargar JSON</button>
+      <button onclick="imprimir()">Imprimir</button>
+
+      <input id="cargarArchivo" type="file" accept=".json" style="display:none" onchange="cargarJSON(event)">
+    </div>
   </div>
 
   <script>
@@ -160,11 +151,7 @@
       tema: "",
       autor: "",
       tonalidad: "",
-      cuadros: [
-        [
-          { contenido: "" }
-        ]
-      ]
+      cuadros: [[{ contenido: "" }]]
     };
 
     const tablero = document.getElementById("tablero");
@@ -172,45 +159,41 @@
     function pintarTablero() {
       tablero.innerHTML = "";
 
-      cancion.cuadros.forEach((fila, indiceFila) => {
+      cancion.cuadros.forEach((fila, i) => {
         const filaDiv = document.createElement("div");
         filaDiv.className = "fila";
 
-        fila.forEach((cuadro, indiceColumna) => {
+        fila.forEach((cuadro, j) => {
           const cuadroDiv = document.createElement("div");
           cuadroDiv.className = "cuadro";
 
           const posicion = document.createElement("div");
           posicion.className = "posicion";
-          posicion.textContent = `${indiceFila + 1},${indiceColumna + 1}`;
+          posicion.textContent = `${i + 1},${j + 1}`;
 
           const contenido = document.createElement("textarea");
           contenido.className = "contenido";
           contenido.value = cuadro.contenido;
           contenido.placeholder = "Acorde";
-
-          contenido.addEventListener("input", () => {
-            cuadro.contenido = contenido.value;
-          });
+          contenido.oninput = () => cuadro.contenido = contenido.value;
 
           cuadroDiv.appendChild(posicion);
           cuadroDiv.appendChild(contenido);
           filaDiv.appendChild(cuadroDiv);
         });
 
-        const botonDerecha = document.createElement("button");
-        botonDerecha.className = "boton-derecha";
-        botonDerecha.textContent = "+";
-        botonDerecha.title = "Crear cuadro a la derecha";
-        botonDerecha.onclick = () => crearCuadroDerecha(indiceFila);
+        const boton = document.createElement("button");
+        boton.className = "boton-derecha";
+        boton.textContent = "+";
+        boton.onclick = () => crearCuadroDerecha(i);
 
-        filaDiv.appendChild(botonDerecha);
+        filaDiv.appendChild(boton);
         tablero.appendChild(filaDiv);
       });
     }
 
-    function crearCuadroDerecha(indiceFila) {
-      cancion.cuadros[indiceFila].push({ contenido: "" });
+    function crearCuadroDerecha(i) {
+      cancion.cuadros[i].push({ contenido: "" });
       pintarTablero();
     }
 
@@ -219,54 +202,63 @@
       pintarTablero();
     }
 
+    function actualizarCabeceraEnObjeto() {
+      cancion.tema = document.getElementById("tema").value;
+      cancion.autor = document.getElementById("autor").value;
+      cancion.tonalidad = document.getElementById("tonalidad").value;
+    }
+
+    function cargarCabeceraDesdeObjeto() {
+      document.getElementById("tema").value = cancion.tema || "";
+      document.getElementById("autor").value = cancion.autor || "";
+      document.getElementById("tonalidad").value = cancion.tonalidad || "";
+    }
+
+    function guardarJSON() {
+      actualizarCabeceraEnObjeto();
+
+      const datos = JSON.stringify(cancion, null, 2);
+      const blob = new Blob([datos], { type: "application/json" });
+      const enlace = document.createElement("a");
+
+      const nombre = (cancion.tema || "cancion")
+        .toLowerCase()
+        .replaceAll(" ", "_")
+        .replace(/[^\w\-]/g, "");
+
+      enlace.href = URL.createObjectURL(blob);
+      enlace.download = nombre + ".json";
+      enlace.click();
+      URL.revokeObjectURL(enlace.href);
+    }
+
+    function cargarJSON(event) {
+      const archivo = event.target.files[0];
+      if (!archivo) return;
+
+      const lector = new FileReader();
+
+      lector.onload = function(e) {
+        const datos = JSON.parse(e.target.result);
+
+        cancion.tema = datos.tema || "";
+        cancion.autor = datos.autor || "";
+        cancion.tonalidad = datos.tonalidad || "";
+        cancion.cuadros = datos.cuadros || [[{ contenido: "" }]];
+
+        cargarCabeceraDesdeObjeto();
+        pintarTablero();
+      };
+
+      lector.readAsText(archivo);
+    }
+
+    function imprimir() {
+      actualizarCabeceraEnObjeto();
+      window.print();
+    }
+
     pintarTablero();
-    <script>
-
-const cancion = {
-    ...
-};
-
-function pintarTablero() {
-    ...
-}
-
-function crearCuadroDerecha(indiceFila) {
-    ...
-}
-
-function crearFila() {
-    ...
-}
-
-/* ===========================
-   GUARDAR / CARGAR / IMPRIMIR
-   =========================== */
-
-function actualizarCabeceraEnObjeto() {
-    ...
-}
-
-function cargarCabeceraDesdeObjeto() {
-    ...
-}
-
-function guardarJSON() {
-    ...
-}
-
-function cargarJSON(event) {
-    ...
-}
-
-function imprimir() {
-    ...
-}
-
-/* =========================== */
-
-pintarTablero();
-
-</script>
   </script>
 
 </body>
