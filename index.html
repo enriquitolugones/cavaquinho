@@ -336,14 +336,21 @@ function pintarTabla(id, lista, accion) {
 }
 
 function actualizarAcordeDesdeTabla() {
-  if (!cuadroActivo) return;
 
-  const acorde = (raizElegida + tipoElegido + (inversionElegida ? " " + inversionElegida : "")).trim();
+    if (!cuadroActivo) return;
 
-  if (acorde) {
-    cuadroActivo.contenido = acorde;
+    let acorde = "";
+
+    if (raizElegida !== "") acorde += raizElegida;
+
+    if (tipoElegido !== "") acorde += tipoElegido;
+
+    if (inversionElegida !== "")
+        acorde += " " + inversionElegida;
+
     document.getElementById("acordeLibre").value = acorde;
-  }
+
+}
 }
 
 function aplicarAcordeLibre() {
