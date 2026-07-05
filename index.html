@@ -298,14 +298,27 @@ let inversionElegida = "";
 
 function abrirModalAcordes(cuadro) {
   cuadroActivo = cuadro;
+
   raizElegida = "";
   tipoElegido = "";
   inversionElegida = "";
 
   document.getElementById("acordeLibre").value = cuadro.contenido || "";
-  pintarTabla("tablaRaices", raices, valor => raizElegida = valor);
-  pintarTabla("tablaTipos", tipos, valor => tipoElegido = valor);
-  pintarTabla("tablaInversiones", inversiones, valor => inversionElegida = valor);
+
+  pintarTabla("tablaRaices", raices, valor => {
+    raizElegida = valor;
+    actualizarAcordeDesdeTabla();
+  });
+
+  pintarTabla("tablaTipos", tipos, valor => {
+    tipoElegido = valor;
+    actualizarAcordeDesdeTabla();
+  });
+
+  pintarTabla("tablaInversiones", inversiones, valor => {
+    inversionElegida = valor;
+    actualizarAcordeDesdeTabla();
+  });
 
   document.getElementById("modalAcordes").style.display = "flex";
 }
@@ -317,10 +330,7 @@ function pintarTabla(id, lista, accion) {
   lista.forEach(valor => {
     const boton = document.createElement("button");
     boton.textContent = valor || "normal";
-    boton.onclick = () => {
-      accion(valor);
-      actualizarAcordeDesdeTabla();
-    };
+    boton.onclick = () => accion(valor);
     contenedor.appendChild(boton);
   });
 }
