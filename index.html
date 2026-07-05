@@ -67,25 +67,67 @@
 
     .cuadro {
       width: 160px;
-      min-height: 80px;
+      min-height: 95px;
       border: 1px solid #394452;
       border-radius: 10px;
       background: #111821;
-      padding: 8px;
+      padding: 6px;
       display: flex;
       flex-direction: column;
     }
 
+    .barra-cuadro {
+      display: grid;
+      grid-template-columns: 34px 1fr 28px;
+      gap: 4px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
     .compas {
-      width: 48px;
+      width: 34px;
+      height: 30px;
       font-size: 13px;
       color: #eaeef5;
       background: #05070a;
       border: 1px solid #394452;
       border-radius: 6px;
-      padding: 4px;
-      margin-bottom: 8px;
+      padding: 2px;
       text-align: center;
+    }
+
+    .selector-tipo {
+      display: flex;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .tipo {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tipo.activo {
+      border-color: #2f81f7;
+      background: #12345a;
+    }
+
+    .papelera {
+      width: 28px;
+      height: 30px;
+      padding: 0;
+      font-size: 15px;
+    }
+
+    .cavaco-icono {
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: -1px;
     }
 
     .acorde {
@@ -135,27 +177,6 @@
       display: flex;
       gap: 10px;
     }
-
-    @media print {
-      body {
-        background: white;
-        color: black;
-      }
-
-      .cabecera, .zona {
-        border: none;
-        background: white;
-      }
-
-      button, .bloque-json, .boton-derecha {
-        display: none;
-      }
-
-      input, textarea {
-        color: black;
-        border: 1px solid #999;
-      }
-    }
   </style>
 </head>
 
@@ -202,7 +223,7 @@
       filas: [
         {
           acordes: [
-            { compas: 1, contenido: "" }
+            { compas: 1, tipo: "nombre", contenido: "" }
           ],
           letra: ""
         }
@@ -213,13 +234,10 @@
 
     function renumerarCompases() {
       let numero = 1;
-
       cancion.filas.forEach(fila => {
         fila.acordes.forEach(cuadro => {
-          if (!cuadro.compas || cuadro.compas < 1) {
-            cuadro.compas = numero;
-          }
-
+          if (!cuadro.compas || cuadro.compas < 1) cuadro.compas = numero;
+          if (!cuadro.tipo) cuadro.tipo = "nombre";
           numero = Number(cuadro.compas) + 1;
         });
       });
@@ -240,6 +258,9 @@
           const cuadroDiv = document.createElement("div");
           cuadroDiv.className = "cuadro";
 
+          const barra = document.createElement("div");
+          barra.className = "barra-cuadro";
+
           const compas = document.createElement("input");
           compas.className = "compas";
           compas.type = "number";
@@ -249,12 +270,32 @@
           compas.autocorrect = "off";
           compas.autocapitalize = "off";
           compas.spellcheck = false;
-
           compas.onchange = () => {
             cuadro.compas = Number(compas.value);
             renumerarCompases();
             pintarTablero();
           };
+
+          const selector = document.createElement("div");
+          selector.className = "selector-tipo";
+
+          const bNombre = crearBotonTipo("✕", "nombre", cuadro);
+          const bCavaco = crearBotonTipo("☰", "cavaco", cuadro);
+          bCavaco.innerHTML = '<span class="cavaco-icono">☰</span>';
+          const bPartitura = crearBotonTipo("𝄞", "partitura", cuadro);
+
+          selector.appendChild(bNombre);
+          selector.appendChild(bCavaco);
+          selector.appendChild(bPartitura);
+
+          const papelera = document.createElement("button");
+          papelera.className = "papelera";
+          papelera.textContent = "🗑";
+          papelera.onclick = () => eliminarAcorde(i, j);
+
+          barra.appendChild(compas);
+          barra.appendChild(selector);
+          barra.appendChild(papelera);
 
           const acorde = document.createElement("textarea");
           acorde.className = "acorde";
@@ -266,7 +307,7 @@
           acorde.placeholder = "Acorde";
           acorde.oninput = () => cuadro.contenido = acorde.value;
 
-          cuadroDiv.appendChild(compas);
+          cuadroDiv.appendChild(barra);
           cuadroDiv.appendChild(acorde);
           lineaAcordes.appendChild(cuadroDiv);
         });
@@ -298,18 +339,36 @@
       });
     }
 
+    function crearBotonTipo(texto, tipo, cuadro) {
+      const boton = document.createElement("button");
+      boton.className = "tipo";
+      boton.textContent = texto;
+      if (cuadro.tipo === tipo) boton.classList.add("activo");
+      boton.onclick = () => {
+        cuadro.tipo = tipo;
+        pintarTablero();
+      };
+      return boton;
+    }
+
+    function eliminarAcorde(fila, columna) {
+      if (cancion.filas[fila].acordes.length === 1) return;
+      cancion.filas[fila].acordes.splice(columna, 1);
+      renumerarCompases();
+      pintarTablero();
+    }
+
     function crearCuadroDerecha(i) {
-      cancion.filas[i].acordes.push({ compas: 1, contenido: "" });
+      cancion.filas[i].acordes.push({ compas: 1, tipo: "nombre", contenido: "" });
       renumerarCompases();
       pintarTablero();
     }
 
     function crearFila() {
       cancion.filas.push({
-        acordes: [{ compas: 1, contenido: "" }],
+        acordes: [{ compas: 1, tipo: "nombre", contenido: "" }],
         letra: ""
       });
-
       renumerarCompases();
       pintarTablero();
     }
@@ -328,7 +387,6 @@
 
     function guardarJSON() {
       actualizarCabeceraEnObjeto();
-
       const datos = JSON.stringify(cancion, null, 2);
       const blob = new Blob([datos], { type: "application/json" });
       const enlace = document.createElement("a");
@@ -349,7 +407,6 @@
       if (!archivo) return;
 
       const lector = new FileReader();
-
       lector.onload = function(e) {
         const datos = JSON.parse(e.target.result);
 
@@ -358,7 +415,7 @@
         cancion.tonalidad = datos.tonalidad || "";
         cancion.filas = datos.filas || [
           {
-            acordes: [{ compas: 1, contenido: "" }],
+            acordes: [{ compas: 1, tipo: "nombre", contenido: "" }],
             letra: ""
           }
         ];
@@ -366,6 +423,7 @@
         cancion.filas.forEach(fila => {
           fila.acordes.forEach(cuadro => {
             if (!cuadro.compas) cuadro.compas = 1;
+            if (!cuadro.tipo) cuadro.tipo = "nombre";
           });
         });
 
