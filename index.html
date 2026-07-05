@@ -56,14 +56,18 @@
     #tonalidad { width: 80px; }
 
     .fila {
+      margin-bottom: 18px;
+    }
+
+    .linea-acordes {
       display: flex;
       gap: 10px;
-      margin-bottom: 10px;
+      align-items: stretch;
     }
 
     .cuadro {
       width: 160px;
-      min-height: 90px;
+      min-height: 80px;
       border: 1px solid #394452;
       border-radius: 10px;
       background: #111821;
@@ -78,14 +82,24 @@
       margin-bottom: 8px;
     }
 
-    .contenido {
+    .acorde {
       flex: 1;
       background: transparent;
+      color: white;
       border: none;
       resize: none;
       outline: none;
+      font-size: 22px;
+      text-align: center;
+    }
+
+    .letra {
+      margin-top: 8px;
+      width: var(--ancho-letra);
+      min-height: 90px;
+      resize: vertical;
       font-size: 18px;
-      width: 100%;
+      line-height: 1.4;
     }
 
     button {
@@ -98,9 +112,14 @@
       cursor: pointer;
     }
 
+    button:hover {
+      background: #263445;
+    }
+
     .boton-derecha {
       align-self: center;
       min-width: 38px;
+      height: 38px;
     }
 
     .bloque-json {
@@ -109,6 +128,27 @@
       border-top: 1px solid #2b3440;
       display: flex;
       gap: 10px;
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+
+      .cabecera, .zona {
+        border: none;
+        background: white;
+      }
+
+      button, .bloque-json, .boton-derecha {
+        display: none;
+      }
+
+      input, textarea {
+        color: black;
+        border: 1px solid #999;
+      }
     }
   </style>
 </head>
@@ -141,17 +181,24 @@
       <button onclick="guardarJSON()">Guardar JSON</button>
       <button onclick="document.getElementById('cargarArchivo').click()">Cargar JSON</button>
       <button onclick="imprimir()">Imprimir</button>
-
       <input id="cargarArchivo" type="file" accept=".json" style="display:none" onchange="cargarJSON(event)">
     </div>
   </div>
 
   <script>
+    const anchoCuadro = 160;
+    const separacion = 10;
+
     const cancion = {
       tema: "",
       autor: "",
       tonalidad: "",
-      cuadros: [[{ contenido: "" }]]
+      filas: [
+        {
+          acordes: [{ contenido: "" }],
+          letra: ""
+        }
+      ]
     };
 
     const tablero = document.getElementById("tablero");
@@ -159,11 +206,14 @@
     function pintarTablero() {
       tablero.innerHTML = "";
 
-      cancion.cuadros.forEach((fila, i) => {
+      cancion.filas.forEach((fila, i) => {
         const filaDiv = document.createElement("div");
         filaDiv.className = "fila";
 
-        fila.forEach((cuadro, j) => {
+        const lineaAcordes = document.createElement("div");
+        lineaAcordes.className = "linea-acordes";
+
+        fila.acordes.forEach((cuadro, j) => {
           const cuadroDiv = document.createElement("div");
           cuadroDiv.className = "cuadro";
 
@@ -171,15 +221,15 @@
           posicion.className = "posicion";
           posicion.textContent = `${i + 1},${j + 1}`;
 
-          const contenido = document.createElement("textarea");
-          contenido.className = "contenido";
-          contenido.value = cuadro.contenido;
-          contenido.placeholder = "Acorde";
-          contenido.oninput = () => cuadro.contenido = contenido.value;
+          const acorde = document.createElement("textarea");
+          acorde.className = "acorde";
+          acorde.value = cuadro.contenido;
+          acorde.placeholder = "Acorde";
+          acorde.oninput = () => cuadro.contenido = acorde.value;
 
           cuadroDiv.appendChild(posicion);
-          cuadroDiv.appendChild(contenido);
-          filaDiv.appendChild(cuadroDiv);
+          cuadroDiv.appendChild(acorde);
+          lineaAcordes.appendChild(cuadroDiv);
         });
 
         const boton = document.createElement("button");
@@ -187,18 +237,34 @@
         boton.textContent = "+";
         boton.onclick = () => crearCuadroDerecha(i);
 
-        filaDiv.appendChild(boton);
+        lineaAcordes.appendChild(boton);
+        filaDiv.appendChild(lineaAcordes);
+
+        const letra = document.createElement("textarea");
+        letra.className = "letra";
+        letra.value = fila.letra;
+        letra.placeholder = "Letra de esta línea...";
+        letra.style.setProperty(
+          "--ancho-letra",
+          ((fila.acordes.length * anchoCuadro) + ((fila.acordes.length - 1) * separacion)) + "px"
+        );
+        letra.oninput = () => fila.letra = letra.value;
+
+        filaDiv.appendChild(letra);
         tablero.appendChild(filaDiv);
       });
     }
 
     function crearCuadroDerecha(i) {
-      cancion.cuadros[i].push({ contenido: "" });
+      cancion.filas[i].acordes.push({ contenido: "" });
       pintarTablero();
     }
 
     function crearFila() {
-      cancion.cuadros.push([{ contenido: "" }]);
+      cancion.filas.push({
+        acordes: [{ contenido: "" }],
+        letra: ""
+      });
       pintarTablero();
     }
 
@@ -244,7 +310,12 @@
         cancion.tema = datos.tema || "";
         cancion.autor = datos.autor || "";
         cancion.tonalidad = datos.tonalidad || "";
-        cancion.cuadros = datos.cuadros || [[{ contenido: "" }]];
+        cancion.filas = datos.filas || [
+          {
+            acordes: [{ contenido: "" }],
+            letra: ""
+          }
+        ];
 
         cargarCabeceraDesdeObjeto();
         pintarTablero();
