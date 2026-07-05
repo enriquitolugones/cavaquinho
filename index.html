@@ -1,1 +1,226 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cavaquinho</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #05070a;
+      color: #eaeef5;
+      font-family: Arial, sans-serif;
+    }
+
+    .cabecera {
+      border: 1px solid #2b3440;
+      background: #10151c;
+      padding: 12px;
+      margin: 12px;
+      border-radius: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .campo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 14px;
+      color: #9fa8b5;
+      white-space: nowrap;
+    }
+
+    input {
+      background: #05070a;
+      color: white;
+      border: 1px solid #394452;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    #tema {
+      width: 320px;
+    }
+
+    #autor {
+      width: 240px;
+    }
+
+    #tonalidad {
+      width: 80px;
+    }
+
+    .zona {
+      margin: 12px;
+      padding: 12px;
+      border: 1px solid #2b3440;
+      border-radius: 10px;
+      background: #080b10;
+    }
+
+    .fila {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .cuadro {
+      width: 160px;
+      min-height: 90px;
+      border: 1px solid #394452;
+      border-radius: 10px;
+      background: #111821;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .posicion {
+      font-size: 13px;
+      color: #7f8b99;
+      margin-bottom: 8px;
+    }
+
+    .contenido {
+      flex: 1;
+      background: transparent;
+      color: white;
+      border: none;
+      resize: none;
+      outline: none;
+      font-size: 18px;
+      width: 100%;
+    }
+
+    button {
+      background: #1c2633;
+      color: white;
+      border: 1px solid #3c4858;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #263445;
+    }
+
+    .boton-derecha {
+      align-self: center;
+      min-width: 38px;
+    }
+
+    .boton-debajo {
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="cabecera">
+    <div class="campo">
+      <label for="tema">Tema musical</label>
+      <input id="tema" type="text">
+    </div>
+
+    <div class="campo">
+      <label for="autor">Autor</label>
+      <input id="autor" type="text">
+    </div>
+
+    <div class="campo">
+      <label for="tonalidad">Tonalidad</label>
+      <input id="tonalidad" type="text">
+    </div>
+  </div>
+
+  <div class="zona">
+    <div id="tablero"></div>
+    <button class="boton-debajo" onclick="crearFila()">+ crear fila debajo</button>
+  </div>
+
+  <script>
+    const cancion = {
+      tema: "",
+      autor: "",
+      tonalidad: "",
+      cuadros: [
+        [
+          { contenido: "" }
+        ]
+      ]
+    };
+
+    const tablero = document.getElementById("tablero");
+
+    function pintarTablero() {
+      tablero.innerHTML = "";
+
+      cancion.cuadros.forEach((fila, indiceFila) => {
+        const filaDiv = document.createElement("div");
+        filaDiv.className = "fila";
+
+        fila.forEach((cuadro, indiceColumna) => {
+          const cuadroDiv = document.createElement("div");
+          cuadroDiv.className = "cuadro";
+
+          const posicion = document.createElement("div");
+          posicion.className = "posicion";
+          posicion.textContent = `${indiceFila + 1},${indiceColumna + 1}`;
+
+          const contenido = document.createElement("textarea");
+          contenido.className = "contenido";
+          contenido.value = cuadro.contenido;
+          contenido.placeholder = "Acorde";
+
+          contenido.addEventListener("input", () => {
+            cuadro.contenido = contenido.value;
+          });
+
+          cuadroDiv.appendChild(posicion);
+          cuadroDiv.appendChild(contenido);
+          filaDiv.appendChild(cuadroDiv);
+        });
+
+        const botonDerecha = document.createElement("button");
+        botonDerecha.className = "boton-derecha";
+        botonDerecha.textContent = "+";
+        botonDerecha.title = "Crear cuadro a la derecha";
+        botonDerecha.onclick = () => crearCuadroDerecha(indiceFila);
+
+        filaDiv.appendChild(botonDerecha);
+        tablero.appendChild(filaDiv);
+      });
+    }
+
+    function crearCuadroDerecha(indiceFila) {
+      cancion.cuadros[indiceFila].push({ contenido: "" });
+      pintarTablero();
+    }
+
+    function crearFila() {
+      cancion.cuadros.push([{ contenido: "" }]);
+      pintarTablero();
+    }
+
+    pintarTablero();
+  </script>
+
+</body>
+</html>
