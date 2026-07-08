@@ -704,7 +704,8 @@ function cargarTarjetaDesdeBiblioteca() {
   if (!html || !cuadroActivo) return;
 
   cuadroActivo.tipo = "instrumento";
-  cuadroActivo.contenido = html;
+  cuadroActivo.htmlTarjeta = html;
+  cuadroActivo.contenido = "";
 
   pintarTablero();
 }
