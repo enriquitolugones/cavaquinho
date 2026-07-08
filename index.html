@@ -268,6 +268,7 @@
     <button onclick="cerrarModalAcordes()">Cerrar</button>
   </div>
 </div>
+  
   <script>
     const anchoCuadro = 160;
     const separacion = 10;
@@ -644,6 +645,26 @@ function seleccionarInstrumento(instrumento) {
     alert("Biblioteca de guitarra pendiente.");
     return;
   }
+}
+
+window.addEventListener("storage", function(event) {
+  if (event.key === "acordeSeleccionado") {
+    cargarAcordeDesdeBiblioteca();
+  }
+});
+
+function cargarAcordeDesdeBiblioteca() {
+  const datos = localStorage.getItem("acordeSeleccionado");
+  if (!datos || !cuadroActivo) return;
+
+  const acorde = JSON.parse(datos);
+
+  cuadroActivo.tipo = "instrumento";
+  cuadroActivo.instrumento = acorde.instrumento;
+  cuadroActivo.contenido = acorde.nombre;
+  cuadroActivo.acordeBiblioteca = acorde;
+
+  pintarTablero();
 }
     
   </script>
