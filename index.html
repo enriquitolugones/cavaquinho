@@ -218,6 +218,45 @@
   min-height: 70px;
   overflow: hidden;
 }
+
+    .diagrama-cavaco-mini {
+  position: relative;
+  width: 130px;
+  height: 70px;
+  margin: 4px auto;
+}
+
+.cuerda-mini {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  height: 2px;
+  background: white;
+}
+
+.traste-mini {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: white;
+}
+
+.punto-mini {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  background: black;
+  border: 2px solid white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.nombre-instrumento-mini {
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 2px;
+}
     
 </style>
 </head>
@@ -457,6 +496,40 @@ if (cuadro.tipo === "partitura") {
     }
   };
 
+} else if (cuadro.tipo === "instrumento" && cuadro.acordeBiblioteca) {
+
+  const nombre = document.createElement("div");
+  nombre.className = "nombre-instrumento-mini";
+  nombre.textContent = cuadro.acordeBiblioteca.nombre || "";
+  cuadroDiv.appendChild(nombre);
+
+  const diagrama = document.createElement("div");
+  diagrama.className = "diagrama-cavaco-mini";
+
+  for (let c = 0; c < 4; c++) {
+    const cuerda = document.createElement("div");
+    cuerda.className = "cuerda-mini";
+    cuerda.style.top = (8 + c * 18) + "px";
+    diagrama.appendChild(cuerda);
+  }
+
+  for (let t = 0; t < 6; t++) {
+    const traste = document.createElement("div");
+    traste.className = "traste-mini";
+    traste.style.left = (5 + t * 24) + "px";
+    diagrama.appendChild(traste);
+  }
+
+  cuadro.acordeBiblioteca.puntos.forEach(p => {
+    const punto = document.createElement("div");
+    punto.className = "punto-mini";
+    punto.style.top = (8 + (p.cuerda - 1) * 18) + "px";
+    punto.style.left = (5 + (p.traste - 0.5) * 24) + "px";
+    diagrama.appendChild(punto);
+  });
+
+  cuadroDiv.appendChild(diagrama);
+
 } else {
   const acorde = document.createElement("textarea");
   acorde.className = "acorde";
@@ -470,6 +543,7 @@ if (cuadro.tipo === "partitura") {
 
   cuadroDiv.appendChild(acorde);
 }
+  
           lineaAcordes.appendChild(cuadroDiv);
         });
 
