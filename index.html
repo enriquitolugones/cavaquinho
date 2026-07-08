@@ -579,8 +579,21 @@ if (cuadro.tipo === "partitura") {
 
 } else if (cuadro.tipo === "instrumento") {
 
+  if (cuadro.marcaRitmica && cuadro.marcaRitmica.trim() !== "") {
+    const marca = document.createElement("div");
+    marca.className = "marca-ritmica";
+    marca.textContent = cuadro.marcaRitmica;
+    marca.onclick = () => abrirEditorRitmo(cuadro);
+    cuadroDiv.appendChild(marca);
+  }
+
   const contenedor = document.createElement("div");
   contenedor.innerHTML = cuadro.htmlTarjeta || "";
+
+  if (cuadro.marcaRitmica && cuadro.marcaRitmica.trim() !== "") {
+    contenedor.className = "tarjeta-con-marca";
+  }
+
   cuadroDiv.appendChild(contenedor);
 
 } else {
@@ -842,7 +855,20 @@ function dibujarDiagramasPegados() {
     });
   });
 }
-    
+    function abrirEditorRitmo(cuadro) {
+  const actual = cuadro.marcaRitmica || "";
+
+  const texto = prompt(
+    "Marca rítmica:\n\n𝅘𝅥𝅮 corchea\n𝄾 silencio corchea\n𝅘𝅥 negra\n𝄽 silencio negra\n· puntillo\n|: repetición izquierda\n:| repetición derecha\n1ª primera vez\n2ª segunda vez\nD.C. al Fine",
+    actual
+  );
+
+  if (texto === null) return;
+
+  cuadro.marcaRitmica = texto;
+  pintarTablero();
+  dibujarDiagramasPegados();
+}
   </script>
 <div id="modalAyudaABC" class="modal-acordes">
   <div class="panel-acordes">
