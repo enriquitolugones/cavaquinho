@@ -413,7 +413,7 @@ function cerrarModalAcordes() {
           selector.className = "selector-tipo";
 
           const bNombre = crearBotonTipo("✕", "nombre", cuadro);
-          const bCavaco = crearBotonTipo("☰", "cavaco", cuadro);
+        const bCavaco = crearBotonTipo("☰", "instrumento", cuadro);
           bCavaco.innerHTML = '<span class="cavaco-icono">☰</span>';
           const bPartitura = crearBotonTipo("𝄞", "partitura", cuadro);
 
@@ -509,11 +509,14 @@ if (cuadro.tipo === "partitura") {
   boton.onclick = () => {
     cuadro.tipo = tipo;
 
-    if (tipo === "nombre") {
-      abrirModalAcordes(cuadro);
-    } else {
-      pintarTablero();
-    }
+if (tipo === "nombre") {
+  abrirModalAcordes(cuadro);
+} else if (tipo === "instrumento") {
+  abrirModalInstrumento(cuadro);
+} else {
+  pintarTablero();
+}
+    
   };
 
   return boton;
@@ -617,6 +620,29 @@ if (cuadro.tipo === "partitura") {
 function cerrarAyudaABC() {
   document.getElementById("modalAyudaABC").style.display = "none";
 }
+
+    function abrirModalInstrumento(cuadro) {
+  cuadroActivo = cuadro;
+  document.getElementById("modalInstrumento").style.display = "flex";
+}
+
+function cerrarModalInstrumento() {
+  document.getElementById("modalInstrumento").style.display = "none";
+}
+
+function seleccionarInstrumento(instrumento) {
+  if (!cuadroActivo) return;
+
+  cuadroActivo.tipo = "instrumento";
+  cuadroActivo.instrumento = instrumento;
+  cuadroActivo.contenido = instrumento === "cavaco"
+    ? "🇧🇷 Cavaquinho"
+    : "🇪🇸 Guitarra";
+
+  cerrarModalInstrumento();
+  pintarTablero();
+}
+    
   </script>
 <div id="modalAyudaABC" class="modal-acordes">
   <div class="panel-acordes">
@@ -671,5 +697,23 @@ G _G F E | D C B, A, |
     <button onclick="cerrarAyudaABC()">Cerrar</button>
   </div>
 </div>
+<div id="modalInstrumento" class="modal-acordes">
+  <div class="panel-acordes">
+    <h2>Seleccionar instrumento</h2>
+
+    <button onclick="seleccionarInstrumento('cavaco')">
+      🇧🇷 Cavaquinho
+    </button>
+
+    <button onclick="seleccionarInstrumento('guitarra')">
+      🇪🇸 Guitarra
+    </button>
+
+    <br><br>
+
+    <button onclick="cerrarModalInstrumento()">Cancelar</button>
+  </div>
+</div>
+  
 </body>
 </html>
