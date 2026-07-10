@@ -14,10 +14,9 @@
 body {
   margin: 0;
   background: #05070a;
-  color: white;function devolverAcordeAlEditor(datos) {
+  color: white;
   font-family: Arial, sans-serif;
 }
-
 header {
   padding: 16px;
   background: #10151c;
@@ -941,22 +940,7 @@ function importarBiblioteca(event) {
 }
 
 cargarBiblioteca();
-  window.addEventListener("message", function(event) {
-
-  if (!event.data) return;
-
-  if (event.data.tipo !== "acordeCavaquinho") return;
-
-  if (!cuadroActivo) return;
-
-  cuadroActivo.tipo = "instrumento";
-  cuadroActivo.htmlTarjeta = event.data.html;
-  cuadroActivo.contenido = "";
-
-  pintarTablero();
-  dibujarDiagramasPegados();
-
-});
+  
 </script>
 
 </body>
