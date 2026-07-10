@@ -855,19 +855,52 @@ function dibujarDiagramasPegados() {
     });
   });
 }
-    function abrirEditorRitmo(cuadro) {
-  const actual = cuadro.marcaRitmica || "";
+    let cuadroRitmoActivo = null;
 
-  const texto = prompt(
-    "Marca rítmica:\n\n𝅘𝅥𝅮 corchea\n𝄾 silencio corchea\n𝅘𝅥 negra\n𝄽 silencio negra\n· puntillo\n|: repetición izquierda\n:| repetición derecha\n1ª primera vez\n2ª segunda vez\nD.C. al Fine",
-    actual
-  );
+function abrirEditorRitmo(cuadro) {
+  cuadroRitmoActivo = cuadro;
 
-  if (texto === null) return;
+  const entrada = document.getElementById("textoRitmo");
+  entrada.value = cuadro.marcaRitmica || "";
 
-  cuadro.marcaRitmica = texto;
+  document.getElementById("modalRitmo").style.display = "flex";
+}
+
+function cerrarEditorRitmo() {
+  document.getElementById("modalRitmo").style.display = "none";
+  cuadroRitmoActivo = null;
+}
+
+function insertarRitmo(simbolo) {
+  const entrada = document.getElementById("textoRitmo");
+
+  const inicio = entrada.selectionStart;
+  const fin = entrada.selectionEnd;
+  const textoActual = entrada.value;
+
+  entrada.value =
+    textoActual.slice(0, inicio) +
+    simbolo +
+    textoActual.slice(fin);
+
+  const nuevaPosicion = inicio + simbolo.length;
+  entrada.focus();
+  entrada.setSelectionRange(nuevaPosicion, nuevaPosicion);
+}
+
+function guardarRitmo() {
+  if (!cuadroRitmoActivo) return;
+
+  cuadroRitmoActivo.marcaRitmica =
+    document.getElementById("textoRitmo").value;
+
+  cerrarEditorRitmo();
   pintarTablero();
   dibujarDiagramasPegados();
+}
+
+function limpiarRitmo() {
+  document.getElementById("textoRitmo").value = "";
 }
   </script>
 <div id="modalAyudaABC" class="modal-acordes">
@@ -940,6 +973,67 @@ G _G F E | D C B, A, |
     <button onclick="cerrarModalInstrumento()">Cancelar</button>
   </div>
 </div>
-  
+  <div id="modalRitmo" class="modal-acordes">
+  <div class="panel-acordes">
+
+    <h2>Marca rítmica</h2>
+
+    <div class="tabla-acordes">
+
+      <button onclick="insertarRitmo('♪')">
+        Corchea
+      </button>
+
+      <button onclick="insertarRitmo('𝄾')">
+        Silencio corchea
+      </button>
+
+      <button onclick="insertarRitmo('♩')">
+        Negra
+      </button>
+
+      <button onclick="insertarRitmo('𝄽')">
+        Silencio negra
+      </button>
+
+      <button onclick="insertarRitmo('|:')">
+        Repetición izquierda
+      </button>
+
+      <button onclick="insertarRitmo(':|')">
+        Repetición derecha
+      </button>
+
+      <button onclick="insertarRitmo('1ª')">
+        Primera vez
+      </button>
+
+      <button onclick="insertarRitmo('2ª')">
+        Segunda vez
+      </button>
+
+      <button onclick="insertarRitmo('D.C.')">
+        D.C.
+      </button>
+
+      <button onclick="insertarRitmo('·')">
+        Puntillo
+      </button>
+
+    </div>
+
+    <textarea
+      id="textoRitmo"
+      class="acorde-libre"
+      rows="4"
+      placeholder="También puedes escribir texto libre"
+    ></textarea>
+
+    <button onclick="guardarRitmo()">Guardar</button>
+    <button onclick="limpiarRitmo()">Limpiar</button>
+    <button onclick="cerrarEditorRitmo()">Cancelar</button>
+
+  </div>
+</div>
 </body>
 </html>
