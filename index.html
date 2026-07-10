@@ -553,6 +553,14 @@ function cerrarModalAcordes() {
 
           cuadroDiv.appendChild(barra);
 
+if (cuadro.marcaRitmica && cuadro.marcaRitmica.trim() !== "") {
+  const marca = document.createElement("div");
+  marca.className = "marca-ritmica";
+  marca.textContent = cuadro.marcaRitmica;
+  marca.onclick = () => abrirEditorRitmo(cuadro);
+  cuadroDiv.appendChild(marca);
+}
+
 if (cuadro.tipo === "partitura") {
   const partitura = document.createElement("div");
   partitura.className = "partitura-box";
@@ -571,6 +579,7 @@ if (cuadro.tipo === "partitura") {
 
   partitura.onclick = () => {
     const nuevo = prompt("Escribe ABC:", cuadro.contenido || "K:C\nC D E F|");
+
     if (nuevo !== null) {
       cuadro.contenido = nuevo;
       pintarTablero();
@@ -578,8 +587,6 @@ if (cuadro.tipo === "partitura") {
   };
 
 } else if (cuadro.tipo === "instrumento") {
-
- 
 
   const contenedor = document.createElement("div");
   contenedor.innerHTML = cuadro.htmlTarjeta || "";
