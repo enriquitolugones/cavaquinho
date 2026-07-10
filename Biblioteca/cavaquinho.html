@@ -665,9 +665,7 @@ function devolverAcordeAlEditor(datos) {
     .map((traste, indice) => {
       if (Number(traste) === 0) return null;
 
-      const numeroCuerda = indice + 1;
-
-      return numeroCuerda + "-" + Number(traste);
+      return (indice + 1) + "-" + Number(traste);
     })
     .filter(Boolean)
     .join(",");
@@ -691,24 +689,24 @@ function devolverAcordeAlEditor(datos) {
   tarjeta.appendChild(diagrama);
   tarjeta.appendChild(numero);
 
-  localStorage.setItem(
-    CLAVE_SELECCION,
-    tarjeta.outerHTML
-  );
+  const html = tarjeta.outerHTML;
 
-  if (
-    window.opener &&
-    !window.opener.closed &&
-    typeof window.opener.cargarTarjetaDesdeBiblioteca === "function"
-  ) {
-    window.opener.cargarTarjetaDesdeBiblioteca();
+  localStorage.setItem("tarjetaSeleccionada", html);
+
+  if (window.opener && !window.opener.closed) {
+    window.opener.postMessage(
+      {
+        tipo: "acordeCavaquinho",
+        html: html
+      },
+      "*"
+    );
   }
 
   setTimeout(() => {
     window.close();
-  }, 150);
+  }, 300);
 }
-
 [
   "nombreAcorde",
   "numeroAbajo",
@@ -762,6 +760,22 @@ document.getElementById("modalEditor").addEventListener(
 );
 
 cargarBiblioteca();
+  window.addEventListener("message", function(event) {
+
+  if (!event.data) return;
+
+  if (event.data.tipo !== "acordeCavaquinho") return;
+
+  if (!cuadroActivo) return;
+
+  cuadroActivo.tipo = "instrumento";
+  cuadroActivo.htmlTarjeta = event.data.html;
+  cuadroActivo.contenido = "";
+
+  pintarTablero();
+  dibujarDiagramasPegados();
+
+});
 </script>
 
 </body>
