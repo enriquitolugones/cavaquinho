@@ -636,9 +636,12 @@ if (cuadro.tipo === "partitura") {
         );
         letra.oninput = () => fila.letra = letra.value;
 
-        filaDiv.appendChild(letra);
+                filaDiv.appendChild(letra);
         tablero.appendChild(filaDiv);
       });
+
+      /* Reconstruye siempre los dibujos después de repintar el tablero */
+      dibujarDiagramasPegados();
     }
 
     function crearBotonTipo(texto, tipo, cuadro) {
