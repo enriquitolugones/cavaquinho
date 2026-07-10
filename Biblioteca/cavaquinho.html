@@ -247,9 +247,29 @@ button:hover {
 <header>
   <h1>🇧🇷 Biblioteca de Cavaquinho</h1>
 
-  <button onclick="abrirEditorNuevo()">
-    + Crear acorde
-  </button>
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+
+    <button onclick="abrirEditorNuevo()">
+      + Crear acorde
+    </button>
+
+    <button onclick="exportarBiblioteca()">
+      Exportar JSON
+    </button>
+
+    <button onclick="document.getElementById('archivoBiblioteca').click()">
+      Importar JSON
+    </button>
+
+    <input
+      id="archivoBiblioteca"
+      type="file"
+      accept=".json,application/json"
+      style="display:none"
+      onchange="importarBiblioteca(event)"
+    >
+
+  </div>
 </header>
 
 <div class="zona">
@@ -785,6 +805,140 @@ document.getElementById("modalEditor").addEventListener(
     }
   }
 );
+
+function exportarBiblioteca() {
+  if (!Array.isArray(acordes) || acordes.length === 0) {
+    alert("La biblioteca está vacía.");
+    return;
+  }
+
+  let nombreArchivo = prompt(
+    "Nombre del archivo JSON:",
+    "biblioteca_cavaquinho"
+  );
+
+  if (nombreArchivo === null) return;
+
+  nombreArchivo = nombreArchivo.trim();
+
+  if (nombreArchivo === "") {
+    nombreArchivo = "biblioteca_cavaquinho";
+  }
+
+  nombreArchivo = nombreArchivo
+    .replace(/\.json$/i, "")
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "_")
+    .replace(/\s+/g, "_");
+
+  const contenido = JSON.stringify(acordes, null, 2);
+
+  const archivo = new Blob(
+    [contenido],
+    { type: "application/json;charset=utf-8" }
+  );
+
+  const enlace = document.createElement("a");
+
+  enlace.href = URL.createObjectURL(archivo);
+  enlace.download = nombreArchivo + ".json";
+
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+
+  setTimeout(() => {
+    URL.revokeObjectURL(enlace.href);
+  }, 1000);
+}
+
+function importarBiblioteca(event) {
+  const input = event.target;
+  const archivo = input.files[0];
+
+  if (!archivo) return;
+
+  const lector = new FileReader();
+
+  lector.onload = function(e) {
+    try {
+      const importados = JSON.parse(e.target.result);
+
+      if (!Array.isArray(importados)) {
+        throw new Error("El JSON no contiene una biblioteca válida.");
+      }
+
+      const validos = importados.filter(acorde => {
+        return (
+          acorde &&
+          typeof acorde === "object" &&
+          typeof acorde.nombre === "string" &&
+          Array.isArray(acorde.cuerdas) &&
+          acorde.cuerdas.length === 4
+        );
+      });
+
+      if (validos.length === 0) {
+        throw new Error("El archivo no contiene acordes válidos.");
+      }
+
+      const opcion = prompt(
+        "¿Qué quieres hacer?\n\n" +
+        "Escribe 1 para SUSTITUIR la biblioteca actual.\n" +
+        "Escribe 2 para AÑADIR los acordes a la biblioteca actual.",
+        "1"
+      );
+
+      if (opcion === null) {
+        input.value = "";
+        return;
+      }
+
+      if (opcion.trim() === "1") {
+        const confirmar = confirm(
+          "Se sustituirá la biblioteca actual completa.\n\n¿Continuar?"
+        );
+
+        if (!confirmar) {
+          input.value = "";
+          return;
+        }
+
+        acordes = validos;
+      } else if (opcion.trim() === "2") {
+        acordes = acordes.concat(validos);
+      } else {
+        alert("Debes escribir 1 o 2.");
+        input.value = "";
+        return;
+      }
+
+      guardarBiblioteca();
+      pintarBiblioteca();
+
+      alert(
+        "Biblioteca importada correctamente.\n\n" +
+        "Acordes cargados: " + validos.length
+      );
+
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "No se pudo importar la biblioteca.\n\n" +
+        error.message
+      );
+    }
+
+    input.value = "";
+  };
+
+  lector.onerror = function() {
+    alert("No se pudo leer el archivo seleccionado.");
+    input.value = "";
+  };
+
+  lector.readAsText(archivo);
+}
 
 cargarBiblioteca();
   window.addEventListener("message", function(event) {
